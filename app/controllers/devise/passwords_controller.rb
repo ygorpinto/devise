@@ -31,7 +31,7 @@ class Devise::PasswordsController < DeviseController
 
   # PUT /resource/password
   def update
-    self.resource = resource_class.reset_password_by_token(resource_params)
+    self.resource = resource_class.reset_password_by_token(resource_params) if validate(resource_params[:password])
     yield resource if block_given?
 
     if resource.errors.empty?
@@ -67,6 +67,13 @@ class Devise::PasswordsController < DeviseController
         set_flash_message(:alert, :no_token)
         redirect_to new_session_path(resource_name)
       end
+    end
+
+    def validate(password)
+      is_valid = false
+      expression = /(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[*\-!$@#\^%])[A-Za-z\d*\-!$@#\^%]{8,}$/
+      is_valid = true if (password =~ expression) == 0
+      is_valid
     end
 
     # Check if proper Lockable module methods are present & unlock strategy
